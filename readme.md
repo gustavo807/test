@@ -18,7 +18,7 @@ Después de descargar el proyecto entramos a este.
 
 - $ php artisan key:generate
 
-## Ejecutamos el comando para correr las migraciones
+### Creamos la base de datos en phpMyAdmin y ejecutamos el comando para correr las migraciones
 
 - $ php artisan migrate
 
