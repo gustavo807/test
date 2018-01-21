@@ -1,58 +1,67 @@
 <p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+## Instalación Proyecto
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Después de descargar el proyecto entramos a este.
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications.
+- $ cd test
 
-## Learning Laravel
+## Ejecutamos el siguiente comando.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of any modern web application framework, making it a breeze to get started learning the framework.
+- $ composer install
 
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 1100 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
+### Modificamos el nombre del archivo .env.example. por .env y agregamos nuestras credenciales.
 
-## Laravel Sponsors
+## Debemos generar una key para nuestra app.
 
-We would like to extend our thanks to the following sponsors for helping fund on-going Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell):
+- $ php artisan key:generate
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Pulse Storm](http://www.pulsestorm.net/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
+## Ejecutamos el comando para correr las migraciones
 
-## Contributing
+- $ php artisan migrate
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Ejecutamos el proyecto
 
-## Security Vulnerabilities
+- $ php artisan serve
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-## License
+### Parte 2: Entramos a phpMyAdmin para agregar los siguientes queries
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```sql
+INSERT INTO salesperson(id, name, age, salary) VALUES ( 1, 'Abe', '61', '140000' ) , ( 2, 'Bob', '34', '44000' ) , ( 5, 'Chris', '34', '40000' ) , ( 7, 'Dan', '41', '52000' ) , ( 8, 'Ken', '57', '115000' ) , ( 11, 'Joe', '38', '38000' ) ; 
+
+INSERT INTO customer(id, name, city, industryType) VALUES ( 4, 'Samsonic', 'pleasant', 'J' ) , ( 6, 'Panasung', 'oaktown', 'J' ) , ( 7, 'Samony', 'jackson', 'B' ) , ( 9, 'Orange', 'jackson', 'B' ) ; 
+
+INSERT INTO orders(number, order_date, cust_id, salesperson_id, amount) VALUES ( '10', '8/2/96', '4', '2', '540' ) , ( '20', '1/30/99', '4', '8', '1800' ) , ( '30', '7/14/95', '9', '1', '460' ) , ( '40', '1/29/98', '7', '2', '2400' ) , ( '50', '2/3/98', '6', '7', '600' ) , ( '60', '3/2/98', '6', '7', '720' ) , ( '70', '5/6/98', '9', '7', '150' ) ;
+```
+
+- a. The names of all salespeople that have an order with Samsonic.
+```sql
+SELECT s.name FROM salesperson s WHERE s.id IN 
+  ( SELECT o.salesperson_id FROM orders o WHERE o.cust_id IN 
+      ( SELECT c.id FROM customer c WHERE c.name = 'Samsonic' ) ) ; 
+```
+
+- b. The names of all salespeople that do not have any order with Samsonic.
+```sql
+SELECT s.name FROM salesperson s WHERE s.id IN 
+    ( SELECT o.salesperson_id FROM orders o WHERE o.cust_id IN 
+        ( SELECT c.id FROM customer c WHERE NOT c.name = 'Samsonic' ) ) ; 
+```
+
+- c. The names of salespeople that have 2 or more orders.
+```sql
+SELECT s.name FROM salesperson s WHERE s.id IN 
+    ( SELECT o.salesperson_id FROM orders o 
+      GROUP BY o.salesperson_id 
+      HAVING COUNT(o.salesperson_id) >= 2 ) ; 
+```
+
+- d. Write a SQL statement to insert rows into a table called highAchiever (Name, Age), where a salesperson must have a salary of 100,000 or greater to be included in the table.
+```sql
+INSERT INTO high_achiever(name, age) 
+    ( SELECT s.name, s.age FROM salesperson s 
+      WHERE s.salary >= 100000);
+```
